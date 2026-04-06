@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ReputTrust — Can you trust this repo?</title>
+  <meta name="description" content="Free trust scores for GitHub repositories. Analyzes real-world usage, package downloads, maintainer health, contributor diversity and growth patterns. Stars can be bought. Trust can't.">
+  <meta name="keywords" content="github, trust score, repository quality, open source, npm downloads, package registry, github stars, code quality, maintainer health">
+  <meta name="author" content="ReputTrust">
+  <meta name="robots" content="index, follow">
+  <meta name="google-site-verification" content="cFR_wxxWEW7r91oDsvXgA5WWKVt_kUwHBnB85B3GhDE" />
+  <link rel="canonical" href="https://reputrust.github.io">
+
+  <meta property="og:title" content="ReputTrust — Can you trust this repo?">
+  <meta property="og:description" content="Free trust scores for GitHub repos. Analyzes real-world usage, downloads, maintainer health and growth patterns instead of stars.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://reputrust.github.io">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="ReputTrust — Can you trust this repo?">
+  <meta name="twitter:description" content="Free trust scores for GitHub repos. Stars can be bought. Trust can't.">
+
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "ReputTrust",
+    "url": "https://reputrust.github.io",
+    "description": "Free trust scores for GitHub repositories based on real-world usage, maintainer health, and community signals instead of stars.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Web",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    }
+  }
+  </script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #0a0a0f;
+      --card: #12121a;
+      --border: #1e1e2e;
+      --text: #a0a0b8;
+      --heading: #ededf0;
+      --accent: #6c5ce7;
+      --accent-glow: #6c5ce740;
+      --green: #00b894;
+      --yellow: #fdcb6e;
+      --orange: #e17055;
+      --red: #d63031;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .hero {
+      text-align: center;
+      padding: 4rem 1.5rem 2rem;
+      position: relative;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -100px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 600px;
+      height: 400px;
+      background: radial-gradient(ellipse, var(--accent-glow) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .logo {
+      font-size: 3rem;
+      font-weight: 800;
+      color: var(--heading);
+      letter-spacing: -1.5px;
+      position: relative;
+    }
+    .logo span { color: var(--accent); }
+
+    .subtitle {
+      font-size: 1.15rem;
+      color: var(--text);
+      margin-top: 0.5rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .search-wrap {
+      max-width: 520px;
+      margin: 0 auto 1rem;
+      position: relative;
+    }
+
+    .search-wrap input {
+      width: 100%;
+      padding: 1rem 1.25rem;
+      padding-right: 7rem;
+      font-size: 1rem;
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      color: var(--heading);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .search-wrap input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+    .search-wrap input::placeholder { color: #4a4a5a; }
+
+    .search-wrap button {
+      position: absolute;
+      right: 6px;
+      top: 6px;
+      bottom: 6px;
+      padding: 0 1.25rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .search-wrap button:hover { opacity: 0.9; }
+    .search-wrap button:disabled { opacity: 0.4; cursor: wait; }
+
+    .try-links {
+      color: #4a4a5a;
+      font-size: 0.85rem;
+      margin-bottom: 3rem;
+    }
+    .try-links a {
+      color: var(--accent);
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .try-links a:hover { text-decoration: underline; }
+
+    #error {
+      max-width: 520px;
+      margin: 0 auto 1.5rem;
+      background: #d6303118;
+      border: 1px solid #d6303140;
+      color: var(--red);
+      padding: 0.75rem 1rem;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      display: none;
+    }
+
+    #result {
+      display: none;
+      max-width: 520px;
+      margin: 0 auto;
+      animation: fadeUp 0.4s ease;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .result-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .score-top {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .score-ring {
+      position: relative;
+      width: 100px;
+      height: 100px;
+      flex-shrink: 0;
+    }
+
+    .score-ring svg {
+      transform: rotate(-90deg);
+      width: 100px;
+      height: 100px;
+    }
+
+    .score-ring .track {
+      fill: none;
+      stroke: var(--border);
+      stroke-width: 8;
+    }
+
+    .score-ring .fill {
+      fill: none;
+      stroke-width: 8;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 1s ease;
+    }
+
+    .score-number {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--heading);
+    }
+
+    .repo-info h2 {
+      font-size: 1.2rem;
+      color: var(--heading);
+      font-weight: 700;
+    }
+    .repo-info h2 a {
+      color: inherit;
+      text-decoration: none;
+    }
+    .repo-info h2 a:hover { color: var(--accent); }
+
+    .repo-info .verdict {
+      font-size: 1rem;
+      margin-top: 0.35rem;
+      font-weight: 500;
+      line-height: 1.4;
+    }
+
+    .signals { display: flex; flex-direction: column; gap: 0.85rem; }
+
+    .signal-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .signal-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.95rem;
+      flex-shrink: 0;
+      background: var(--border);
+    }
+
+    .signal-info { flex: 1; }
+    .signal-info .name {
+      font-size: 0.85rem;
+      color: var(--heading);
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+
+    .signal-bar {
+      height: 5px;
+      background: var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .signal-bar-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.8s ease;
+    }
+
+    .signal-level {
+      font-size: 0.75rem;
+      color: var(--text);
+      min-width: 48px;
+      text-align: right;
+    }
+
+    /* Tip box */
+    .tip {
+      margin-top: 1.25rem;
+      padding: 0.75rem 1rem;
+      background: #6c5ce710;
+      border: 1px solid #6c5ce730;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      color: var(--text);
+      line-height: 1.5;
+    }
+    .tip strong { color: var(--heading); }
+
+    /* Share button */
+    .share-row {
+      margin-top: 1rem;
+      display: flex;
+      gap: 0.5rem;
+    }
+    .share-btn {
+      padding: 0.5rem 1rem;
+      font-size: 0.8rem;
+      background: var(--border);
+      color: var(--text);
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .share-btn:hover { background: #2a2a3a; color: var(--heading); }
+
+    .recent {
+      max-width: 520px;
+      margin: 2rem auto;
+    }
+
+    .recent h3 {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: #4a4a5a;
+      margin-bottom: 0.75rem;
+    }
+
+    .recent-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .recent-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.4rem 0.75rem;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      font-size: 0.8rem;
+      color: var(--text);
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+    .recent-chip:hover { border-color: var(--accent); }
+
+    .recent-chip .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* How it works */
+    .how-it-works {
+      max-width: 520px;
+      margin: 3rem auto 0;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .how-it-works h3 {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: #4a4a5a;
+      margin-bottom: 1rem;
+    }
+
+    .how-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+
+    .how-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem;
+    }
+
+    .how-card .icon { font-size: 1.2rem; margin-bottom: 0.4rem; }
+    .how-card .title {
+      font-size: 0.85rem;
+      color: var(--heading);
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+    .how-card .desc {
+      font-size: 0.75rem;
+      color: #6a6a80;
+      line-height: 1.4;
+    }
+
+    .seo-content {
+      max-width: 520px;
+      margin: 2.5rem auto 0;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+    }
+    .seo-content h2 {
+      font-size: 1rem;
+      color: var(--heading);
+      margin-bottom: 0.5rem;
+      margin-top: 1.5rem;
+    }
+    .seo-content h2:first-child { margin-top: 0; }
+    .seo-content p {
+      font-size: 0.85rem;
+      color: #6a6a80;
+      line-height: 1.6;
+      margin-bottom: 0.75rem;
+    }
+
+    .footer {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: #3a3a4a;
+      font-size: 0.8rem;
+    }
+    .footer a { color: #4a4a5a; text-decoration: none; }
+    .footer a:hover { color: var(--accent); }
+
+    @media (max-width: 540px) {
+      .hero { padding: 2.5rem 1rem 1.5rem; }
+      .logo { font-size: 2.2rem; }
+      .subtitle { font-size: 1rem; }
+      .score-top { gap: 1rem; }
+      .score-ring { width: 80px; height: 80px; }
+      .score-ring svg { width: 80px; height: 80px; }
+      .score-number { font-size: 1.5rem; }
+      .how-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="hero">
+    <div class="logo">Reput<span>Trust</span></div>
+    <p class="subtitle">Can you trust this repo? Find out in seconds.</p>
+
+    <div class="search-wrap">
+      <input type="text" id="input" placeholder="Paste a GitHub link or type owner/repo" autocomplete="off" spellcheck="false" />
+      <button id="btn" onclick="go()">Score</button>
+    </div>
+
+    <div class="try-links">
+      Try <a onclick="t('facebook/react')">react</a> &middot;
+      <a onclick="t('expressjs/express')">express</a> &middot;
+      <a onclick="t('denoland/deno')">deno</a> &middot;
+      <a onclick="t('torvalds/linux')">linux</a>
+    </div>
+  </div>
+
+  <div id="error"></div>
+
+  <div id="result">
+    <div class="result-card">
+      <div class="score-top">
+        <div class="score-ring">
+          <svg viewBox="0 0 100 100">
+            <circle class="track" cx="50" cy="50" r="42"/>
+            <circle class="fill" id="ring-fill" cx="50" cy="50" r="42"
+              stroke-dasharray="264" stroke-dashoffset="264"/>
+          </svg>
+          <div class="score-number" id="score-num"></div>
+        </div>
+        <div class="repo-info">
+          <h2 id="repo-name"></h2>
+          <div class="verdict" id="verdict"></div>
+        </div>
+      </div>
+      <div class="signals" id="signals"></div>
+      <div class="tip" id="tip"></div>
+      <div class="share-row">
+        <button class="share-btn" id="share-link" onclick="copyLink()">Copy link</button>
+        <button class="share-btn" id="share-x" onclick="shareX()">Share on X</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="recent" id="recent-section" style="display:none">
+    <h3>Recently scored</h3>
+    <div class="recent-grid" id="recent-grid"></div>
+  </div>
+
+  <div class="how-it-works">
+    <h3>What we measure</h3>
+    <div class="how-grid">
+      <div class="how-card">
+        <div class="icon">📦</div>
+        <div class="title">Real-world usage</div>
+        <div class="desc">Are real projects actually depending on this? Downloads and dependents don't lie.</div>
+      </div>
+      <div class="how-card">
+        <div class="icon">🔧</div>
+        <div class="title">Maintainer health</div>
+        <div class="desc">Are issues being addressed? Active maintenance means someone cares.</div>
+      </div>
+      <div class="how-card">
+        <div class="icon">👥</div>
+        <div class="title">Community strength</div>
+        <div class="desc">A healthy project has more than one person behind it.</div>
+      </div>
+      <div class="how-card">
+        <div class="icon">📈</div>
+        <div class="title">Growth pattern</div>
+        <div class="desc">Organic growth over time beats sudden viral spikes from bots.</div>
+      </div>
+    </div>
+  </div>
+
+  <article class="seo-content">
+    <h2>Why GitHub stars don't measure trust</h2>
+    <p>GitHub stars have become a vanity metric. Stars can be bought in bulk, inflated by bots, or driven by viral hype with no connection to code quality. A repository with 50,000 stars might have zero real users, while a repo with 500 stars powers thousands of production applications.</p>
+    <p>ReputTrust scores GitHub repositories on signals that actually matter: package downloads from npm, PyPI, crates.io, Docker Hub, NuGet, and Homebrew; issue resolution rates; contributor diversity; organic growth patterns; and CI/test coverage. These signals are hard to fake because they require genuine adoption and maintenance.</p>
+    <h2>How the trust score works</h2>
+    <p>Every repository gets a score from 0 to 100 based on five categories: real-world usage (are people actually installing and depending on this?), maintainer health (are issues being resolved?), community strength (is there more than one contributor?), growth pattern (is adoption organic or artificial?), and code quality (does it have tests and CI?). The score updates every 6 hours.</p>
+    <h2>Supported package registries</h2>
+    <p>ReputTrust checks downloads across npm, PyPI, crates.io, Go modules, Docker Hub, NuGet, Homebrew, and GitHub Releases. If a project is distributed through any of these, its real-world adoption is reflected in the score.</p>
+  </article>
+
+  <div class="footer">
+    Stars can be bought. Trust can't.<br>
+    <a href="https://github.com/reputrust" target="_blank" rel="noopener">GitHub</a>
+  </div>
+
+  <script>
+    const API = 'https://reputrust.netlify.app';
+    const $ = id => document.getElementById(id);
+    const input = $('input');
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
+
+    // Check URL hash for direct links: #facebook/react
+    if (location.hash.length > 2) {
+      input.value = location.hash.slice(1);
+      go();
+    } else {
+      loadRecent();
+    }
+
+    function t(name) { input.value = name; go(); }
+
+    function sanitize(str) {
+      return str.replace(/[^a-zA-Z0-9._-]/g, '');
+    }
+
+    let currentRepo = '';
+
+    async function go() {
+      const raw = input.value.trim().replace(/^https?:\/\/github\.com\//, '').replace(/\/$/,'');
+      const p = raw.split('/').filter(Boolean);
+      if (p.length < 2) return err('Enter owner/repo or paste a GitHub URL');
+
+      const owner = sanitize(p[0]), repo = sanitize(p[1]);
+      if (!owner || !repo) return err('Invalid repo name');
+
+      currentRepo = `${owner}/${repo}`;
+      const btn = $('btn');
+      btn.disabled = true;
+      btn.textContent = '...';
+      $('error').style.display = 'none';
+      $('result').style.display = 'none';
+
+      try {
+        const res = await fetch(`${API}/api/score/${owner}/${repo}`);
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Something went wrong');
+        render(owner, repo, data);
+        loadRecent();
+        // Update URL hash for shareability
+        history.replaceState(null, '', `#${owner}/${repo}`);
+      } catch (e) {
+        err(e.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Score';
+      }
+    }
+
+    function err(msg) {
+      const el = $('error');
+      el.textContent = msg;
+      el.style.display = 'block';
+    }
+
+    function hide(id) { $(id).style.display = 'none'; }
+
+    function color(pct) {
+      if (pct >= 80) return 'var(--green)';
+      if (pct >= 60) return 'var(--yellow)';
+      if (pct >= 40) return 'var(--orange)';
+      return 'var(--red)';
+    }
+
+    const VERDICTS = {
+      'A+': 'Highly trusted. Battle-tested and widely adopted.',
+      'A':  'Trusted. Strong signals across the board.',
+      'B':  'Solid project. A few areas could be stronger.',
+      'C':  'Decent foundations, but room to grow.',
+      'D':  'Early stage or limited adoption. Worth watching.',
+      'F':  'Too early to tell. Not enough signal yet.',
+    };
+
+    const TIPS = {
+      'A+': 'This project has earned serious trust through real-world usage and active maintenance.',
+      'A':  'Strong across the board. This is a project you can rely on.',
+      'B':  'A good project that could level up by growing its community or improving issue response times.',
+      'C':  'This project shows promise. Publishing to a package registry and improving docs would help adoption.',
+      'D':  'Still building momentum. More contributors and consistent maintenance would boost trust.',
+      'F':  'Every great project starts somewhere. Shipping a first release and adding CI would be a great next step.',
+    };
+
+    const SIGNALS = [
+      { key: 'realWorldUsage',   icon: '📦', name: 'Real-world usage',    max: 45 },
+      { key: 'maintainerHealth', icon: '🔧', name: 'Maintainer health',   max: 15 },
+      { key: 'communityStrength',icon: '👥', name: 'Community strength',  max: 15 },
+      { key: 'growthPattern',    icon: '📈', name: 'Growth pattern',      max: 15 },
+      { key: 'codeQuality',     icon: '✅', name: 'Code quality',         max: 10 },
+    ];
+
+    const LEVELS = [
+      [80, 'Excellent'], [60, 'Good'], [40, 'Fair'], [20, 'Emerging'], [0, 'Starting']
+    ];
+
+    function level(pct) {
+      for (const [min, label] of LEVELS) if (pct >= min) return label;
+      return 'Starting';
+    }
+
+    function render(owner, repo, data) {
+      const c = color(data.score);
+
+      const circumference = 264;
+      const offset = circumference - (data.score / 100) * circumference;
+      const ring = $('ring-fill');
+      ring.style.stroke = c;
+      ring.style.strokeDashoffset = String(circumference);
+      requestAnimationFrame(() => {
+        ring.style.strokeDashoffset = String(offset);
+      });
+
+      $('score-num').textContent = data.score;
+
+      // Repo name as clickable link
+      const nameEl = $('repo-name');
+      nameEl.innerHTML = '';
+      const link = document.createElement('a');
+      link.href = `https://github.com/${owner}/${repo}`;
+      link.target = '_blank';
+      link.rel = 'noopener';
+      link.textContent = `${owner}/${repo}`;
+      nameEl.appendChild(link);
+
+      const v = VERDICTS[data.grade] || VERDICTS['F'];
+      $('verdict').textContent = v;
+      $('verdict').style.color = c;
+
+      $('tip').innerHTML = `<strong>Insight:</strong> ${TIPS[data.grade] || TIPS['F']}`;
+
+      // Signals — safe DOM construction
+      const el = $('signals');
+      el.innerHTML = '';
+      for (const s of SIGNALS) {
+        const val = data.signals[s.key] ?? 0;
+        const pct = Math.min(Math.round((val / s.max) * 100), 100);
+
+        const row = document.createElement('div');
+        row.className = 'signal-row';
+
+        const icon = document.createElement('div');
+        icon.className = 'signal-icon';
+        icon.textContent = s.icon;
+
+        const info = document.createElement('div');
+        info.className = 'signal-info';
+
+        const name = document.createElement('div');
+        name.className = 'name';
+        name.textContent = s.name;
+
+        const bar = document.createElement('div');
+        bar.className = 'signal-bar';
+        const fill = document.createElement('div');
+        fill.className = 'signal-bar-fill';
+        fill.style.width = pct + '%';
+        fill.style.background = color(pct);
+        bar.appendChild(fill);
+
+        info.appendChild(name);
+        info.appendChild(bar);
+
+        const lvl = document.createElement('div');
+        lvl.className = 'signal-level';
+        lvl.style.color = color(pct);
+        lvl.textContent = level(pct);
+
+        row.appendChild(icon);
+        row.appendChild(info);
+        row.appendChild(lvl);
+        el.appendChild(row);
+      }
+
+      $('result').style.display = 'block';
+      $('result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function copyLink() {
+      const url = `${location.origin}${location.pathname}#${currentRepo}`;
+      navigator.clipboard.writeText(url).then(() => {
+        $('share-link').textContent = 'Copied!';
+        setTimeout(() => { $('share-link').textContent = 'Copy link'; }, 2000);
+      });
+    }
+
+    function shareX() {
+      const score = $('score-num').textContent;
+      const text = `${currentRepo} scored ${score}/100 on @ReputTrust — real trust scores for GitHub repos. Stars can be bought, trust can't.`;
+      const url = `${location.origin}${location.pathname}#${currentRepo}`;
+      window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank', 'noopener');
+    }
+
+    async function loadRecent() {
+      try {
+        const res = await fetch(`${API}/api/recent`);
+        if (!res.ok) return;
+        const list = await res.json();
+        if (!list.length) return;
+
+        const grid = $('recent-grid');
+        grid.innerHTML = '';
+        for (const item of list) {
+          const owner = sanitize(item.owner);
+          const repo = sanitize(item.repo);
+          if (!owner || !repo) continue;
+          const c = color(item.score);
+          const chip = document.createElement('div');
+          chip.className = 'recent-chip';
+          chip.onclick = () => t(`${owner}/${repo}`);
+          const dot = document.createElement('span');
+          dot.className = 'dot';
+          dot.style.background = c;
+          chip.appendChild(dot);
+          chip.appendChild(document.createTextNode(` ${owner}/${repo}`));
+          grid.appendChild(chip);
+        }
+        $('recent-section').style.display = 'block';
+      } catch {}
+    }
+  </script>
+</body>
+</html>
